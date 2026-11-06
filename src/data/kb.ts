@@ -44,7 +44,7 @@ export interface KbArticle {
   /** Amber "Internal ICT Runbook" badge (visible to admins). */
   internal?: boolean;
   /** Appears in the Trending Now (last 48 hours) rail. */
-  trending?: { spike: string } | undefined;
+  trending?: { spike: string };
   content: string;
 }
 
@@ -65,12 +65,12 @@ export const KB_ARTICLES: KbArticle[] = [
 After the October SAP kernel patch, several Finance and Transmission Operations users cannot log in — the GUI hangs on **Connection to application server broken** and then times out.
 
 ## Quick fix (works for most users)
-- Close SAP GUI completely. Check Task Manager and end any remaining `sapgui.exe` process.
-- Launch the SAP Logon shortcut **once as administrator** so the rebuilt `sapmsg.ini` is picked up.
+- Close SAP GUI completely. Check Task Manager and end any remaining \`sapgui.exe\` process.
+- Launch the SAP Logon shortcut **once as administrator** so the rebuilt \`sapmsg.ini\` is picked up.
 - Reopen SAP GUI normally and log in to client **100 (PRD)**.
 
 ## If the quick fix does not work
-1. Ping the production server `sap-prd-01.ketraco.local` — expect replies under 5 ms from HQ.
+1. Ping the production server \`sap-prd-01.ketraco.local\` — expect replies under 5 ms from HQ.
 2. Capture a screenshot of the error, including the **return code** in the status bar.
 3. Log a ticket under **SAP & ERP** and attach the screenshot. ICT escalates to the BASIS team with the trace file.
 
@@ -105,10 +105,9 @@ SW-KAWI-B2-C2960 serves **Finance and Human Capital** desks on the 2nd floor of 
 ## Controlled reboot
 1. SSH to \`10.20.2.11\` with your ICT operator credentials.
 2. \`write mem\` then \`reload in 1\` — never reload at the moment, allow the 1-minute grace period.
-3. Verify stack recovery: \`show version\`, \`show ip interface brief\`.
+3. Verify stack recovery: \`show version\` and \`show ip interface brief\`.
 
 ## VLAN table (trunk ports)
-| VLAN | Purpose | Range |
 - VLAN 80 — Finance user segment — 10.20.8.0/23
 - VLAN 120 — VoIP (204-series extensions) — 10.20.12.0/24
 - VLAN 160 — Building management — 10.20.16.0/22
@@ -128,7 +127,7 @@ If the stack fails to recover in 5 minutes, call the NOC duty phone (Ext 2002) a
     updated: "2 days ago",
     tags: ["printing", "Windows 11", "HP LaserJet", "print queue"],
     content: `## Find the queue name
-Every KETRACO printer is named after its location, e.g. `\\\\ktc-print-01\\\\FIN-B2-HP404` for the Finance open-area printer on Kawi Complex Block B.
+Every KETRACO printer is named after its location, e.g. \\\\ktc-print-01\\\\FIN-B2-HP404 for the Finance open-area printer on Kawi Complex Block B.
 
 ## Add the printer
 1. Press **Win + R**, paste the queue path and press Enter — Windows installs the driver automatically.
@@ -136,7 +135,7 @@ Every KETRACO printer is named after its location, e.g. `\\\\ktc-print-01\\\\FIN
 3. Print a test page from **Settings > Bluetooth & devices > Printers & scanners**.
 
 ## If nothing prints
-- Clear the driver cache: stop the **Print Spooler** service, delete everything in `C:\\Windows\\System32\\spool\\PRINTERS`, start the service again.
+- Clear the driver cache: stop the **Print Spooler** service, delete everything in \`C:\\\\Windows\\\\System32\\\\spool\\\\PRINTERS\`, start the service again.
 - Confirm you are on the corporate network or VPN — guest Wi-Fi cannot reach the print servers.
 
 ## Checklist
@@ -157,18 +156,14 @@ Every KETRACO printer is named after its location, e.g. `\\\\ktc-print-01\\\\FIN
     tags: ["Cisco", "trunk", "802.1Q", "VLAN", "Catalyst"],
     restricted: true,
     internal: true,
-    content: `## Standard trunk template
-\`\`\`
-interface Gi0/1
- description Trunk-to-Distribution-SW-KAWI-B1
- switchport mode trunk
- switchport trunk allowed vlan 80,120,160
- switchport trunk native vlan 999
- spanning-tree port type network
-\`\`\`
+    content: `## Standard trunk template (Gi0/1 example)
+- \`switchport mode trunk\`
+- \`switchport trunk allowed vlan 80,120,160\`
+- \`switchport trunk native vlan 999\`
+- \`spanning-tree port type network\`
+- Description line: **Trunk-to-Distribution-SW-KAWI-B1**
 
 ## KETRACO VLAN allocation
-| VLAN | Segment | Notes |
 - VLAN 80 — Finance & Admin users — Kawi House / Complex
 - VLAN 100 — Transmission Operations — substation LANs
 - VLAN 120 — VoIP handsets — 2xxx extensions
@@ -353,7 +348,6 @@ Commissioning and maintenance engineers assigned to **Suswa, Isinya or Dandora**
 4. Confirm the first connection while on a call with the engineer.
 
 ## SCADA split-tunnel rules
-| Destination | Access |
 - 10.140.0.0/16 (substation RTU VLANs) — SCADA group only
 - 10.20.0.0/16 (corporate LAN) — all VPN engineers
 - Internet — via corporate proxy, no direct egress
@@ -394,7 +388,7 @@ export function getArticle(id: string): KbArticle | undefined {
   return KB_ARTICLES.find((a) => a.id === id);
 }
 
-export function searchArticles(query: string, role: "user" | "admin"): KbArticle[] {
+export function searchArticles(query: string): KbArticle[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   return KB_ARTICLES.filter((a) =>
