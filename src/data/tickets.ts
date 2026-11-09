@@ -29,7 +29,7 @@ export interface Ticket {
   priority: Priority;
   status: TicketStatus;
   requester: TicketRequester;
-  assignee?: string;
+  assignee?: string | undefined;
   createdAt: string;
   slaHours: number;
   description: string;

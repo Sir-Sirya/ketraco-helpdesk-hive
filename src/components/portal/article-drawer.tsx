@@ -11,7 +11,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
-import { categoryLabel, KB_CATEGORIES } from "@/data/kb";
+import { categoryLabel, KB_CATEGORIES, KB_ARTICLES } from "@/data/kb";
 import { renderKbMarkdown } from "@/lib/kb-markdown";
 import { usePortal } from "./portal-context";
 import {

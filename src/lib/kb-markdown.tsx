@@ -1,5 +1,6 @@
 import { Fragment, useState, type ReactNode } from "react";
-import { Check } from "lucide-react";
+import { Check, Copy } from "lucide-react";
+import { toast } from "sonner";
 
 function renderInline(text: string): ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
@@ -23,6 +24,37 @@ function renderInline(text: string): ReactNode {
     }
     return <Fragment key={i}>{p}</Fragment>;
   });
+}
+
+function CliSnippet({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    toast.success("Command copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="group my-1.5 flex items-center justify-between rounded-lg border border-border bg-muted/80 px-3 py-1.5 font-mono text-xs">
+      <div className="flex items-center gap-2 overflow-x-auto min-w-0 mr-2">
+        <span className="text-brand font-bold select-none">#</span>
+        <code className="text-foreground truncate">{code}</code>
+      </div>
+      <button
+        type="button"
+        onClick={copy}
+        title="Copy CLI command"
+        className="rounded p-1 text-muted-foreground transition-colors hover:bg-background hover:text-foreground shrink-0"
+      >
+        {copied ? (
+          <Check className="h-3.5 w-3.5 text-success" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </button>
+    </div>
+  );
 }
 
 function CheckItem({ label, checked }: { label: string; checked: boolean }) {
@@ -85,7 +117,7 @@ function Steps({ items }: { items: string[] }) {
 
 /**
  * Small purpose-built renderer for KB article content: ## headings, paragraphs,
- * - bullets, 1. steps, - [x] checklists, **bold** and `code`.
+ * CLI command snippets with copy button, - bullets, 1. steps, - [x] checklists, **bold** and `code`.
  */
 export function renderKbMarkdown(content: string): ReactNode {
   const lines = content.split("\n");
@@ -142,20 +174,29 @@ export function renderKbMarkdown(content: string): ReactNode {
       );
       continue;
     }
+
+    // CLI single-command list item: - `command`
+    const cliMatch = line.match(/^- `([^`]+)`$/);
+    if (cliMatch && cliMatch[1] !== undefined) {
+      flush();
+      blocks.push(<CliSnippet key={`cli${blocks.length}`} code={cliMatch[1]} />);
+      continue;
+    }
+
     const check = line.match(/^- \[( |x)\] (.*)$/);
-    if (check) {
+    if (check && check[1] !== undefined && check[2] !== undefined) {
       flush();
       checks.push({ label: check[2], checked: check[1] === "x" });
       continue;
     }
     const bullet = line.match(/^- (.*)$/);
-    if (bullet) {
+    if (bullet && bullet[1] !== undefined) {
       if (steps.length || checks.length) flush();
       bullets.push(bullet[1]);
       continue;
     }
     const step = line.match(/^\d+\. (.*)$/);
-    if (step) {
+    if (step && step[1] !== undefined) {
       if (bullets.length || checks.length) flush();
       steps.push(step[1]);
       continue;

@@ -54,17 +54,18 @@ export const DEMO_USERS: Record<Role, DemoUser> = {
 };
 
 export interface TicketPrefill {
-  subject?: string;
-  category?: CategoryId;
-  priority?: Priority;
-  description?: string;
-  requester?: TicketRequester;
-  source?: string;
+  subject?: string | undefined;
+  category?: CategoryId | undefined;
+  priority?: Priority | undefined;
+  description?: string | undefined;
+  requester?: TicketRequester | undefined;
+  source?: string | undefined;
 }
 
-export interface ChatSeed {
+export interface ChatState {
+  open: boolean;
   mode: "bot" | "agent";
-  context?: string;
+  context?: string | undefined;
 }
 
 interface PortalContextValue {
@@ -77,9 +78,9 @@ interface PortalContextValue {
     category: CategoryId;
     priority: Priority;
     description: string;
-    requester?: TicketRequester;
-    attachments?: string[];
-    source?: string;
+    requester?: TicketRequester | undefined;
+    attachments?: string[] | undefined;
+    source?: string | undefined;
   }) => Ticket;
   updateTicketStatus: (id: string, status: TicketStatus) => void;
   assignToMe: (id: string) => void;
@@ -88,13 +89,13 @@ interface PortalContextValue {
   openArticle: (id: string) => void;
   closeArticle: () => void;
   ticketDrawer: { open: boolean; prefill: TicketPrefill | null };
-  openTicketDrawer: (prefill?: TicketPrefill) => void;
+  openTicketDrawer: (prefill?: TicketPrefill | undefined) => void;
   closeTicketDrawer: () => void;
   callRinging: boolean;
   receiveCall: () => void;
   dismissCall: () => void;
-  chat: { open: boolean; mode: "bot" | "agent"; context?: string };
-  openChat: (mode: "bot" | "agent", context?: string) => void;
+  chat: ChatState;
+  openChat: (mode: "bot" | "agent", context?: string | undefined) => void;
   closeChat: () => void;
 }
 
@@ -115,7 +116,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     prefill: TicketPrefill | null;
   }>({ open: false, prefill: null });
   const [callRinging, setCallRinging] = useState(false);
-  const [chat, setChat] = useState<{ open: boolean; mode: "bot" | "agent"; context?: string }>({
+  const [chat, setChat] = useState<ChatState>({
     open: false,
     mode: "bot",
   });
@@ -209,10 +210,10 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   }, []);
   const dismissCall = useCallback(() => setCallRinging(false), []);
 
-  const openChat = useCallback((mode: "bot" | "agent", context?: string) => {
-    setChat({ open: true, mode, context });
+  const openChat = useCallback((mode: "bot" | "agent", context?: string | undefined) => {
+    setChat({ open: true, mode, ...(context ? { context } : {}) });
   }, []);
-  const closeChat = useCallback(() => setChat((c) => ({ ...c, open: false, context: undefined })), []);
+  const closeChat = useCallback(() => setChat((c) => ({ open: false, mode: c.mode })), []);
 
   const value = useMemo<PortalContextValue>(
     () => ({

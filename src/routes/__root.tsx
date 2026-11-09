@@ -4,15 +4,17 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { BookOpen, Ticket } from "lucide-react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-import { PortalProvider } from "@/components/portal/portal-context";
+import { reportAppError } from "../lib/error-reporting";
+import { PortalProvider, usePortal } from "@/components/portal/portal-context";
 import { Sidebar } from "@/components/portal/sidebar";
 import { TopBar } from "@/components/portal/top-bar";
 import { ArticleDrawer } from "@/components/portal/article-drawer";
@@ -47,7 +49,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportAppError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
@@ -92,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "KETRACO ICT support, knowledge articles, and ticket tracking." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@KETRACO1" },
     ],
     links: [
       {
@@ -122,26 +124,60 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function AppShell() {
+  const { role } = usePortal();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  return (
+    <div className="flex min-h-screen flex-col bg-canvas">
+      <TopBar />
+      <nav
+        aria-label="Main mobile navigation"
+        className="flex items-center gap-2 border-b border-border bg-card px-4 py-2 md:hidden shadow-xs"
+      >
+        <Link
+          to="/"
+          className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+            pathname === "/"
+              ? "bg-brand-tint text-brand-dark font-bold"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          <BookOpen className="h-4 w-4" />
+          Knowledge
+        </Link>
+        <Link
+          to="/tickets"
+          className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+            pathname.startsWith("/tickets")
+              ? "bg-brand-tint text-brand-dark font-bold"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          <Ticket className="h-4 w-4" />
+          {role === "admin" ? "Ticket Console" : "My Reported Tickets"}
+        </Link>
+      </nav>
+      <div className="flex min-h-0 flex-1">
+        <div className="hidden md:flex">
+          <Sidebar />
+        </div>
+        <main className="min-w-0 flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks child routes. */}
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <PortalProvider>
-        <div className="flex min-h-screen flex-col bg-canvas">
-          <TopBar />
-          <nav aria-label="Main navigation" className="flex gap-2 border-b bg-card px-3 py-2 md:hidden">
-            <Link to="/" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">Knowledge</Link>
-            <Link to="/tickets" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">Tickets</Link>
-          </nav>
-          <div className="flex min-h-0 flex-1">
-            <div className="hidden md:flex"><Sidebar /></div>
-            <main className="min-w-0 flex-1">
-              {/* Required: nested routes render here. Removing <Outlet /> breaks child routes. */}
-              <Outlet />
-            </main>
-          </div>
-        </div>
+        <AppShell />
         <ArticleDrawer />
         <TicketDrawer />
         <CtiCallCard />

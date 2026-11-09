@@ -14,7 +14,7 @@ export interface KbCategory {
   label: string;
   icon: LucideIcon;
   /** Only ICT staff (admin role) may open this category and its articles. */
-  restricted?: boolean;
+  restricted?: boolean | undefined;
 }
 
 export const KB_CATEGORIES: KbCategory[] = [
@@ -40,11 +40,11 @@ export interface KbArticle {
   updated: string;
   tags: string[];
   /** Restricted to ICT & Telecommunications staff only. */
-  restricted?: boolean;
+  restricted?: boolean | undefined;
   /** Amber "Internal ICT Runbook" badge (visible to admins). */
-  internal?: boolean;
+  internal?: boolean | undefined;
   /** Appears in the Trending Now (last 48 hours) rail. */
-  trending?: { spike: string };
+  trending?: { spike: string } | undefined;
   content: string;
 }
 
