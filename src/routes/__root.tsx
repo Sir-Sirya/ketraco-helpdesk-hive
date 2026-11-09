@@ -12,6 +12,14 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { PortalProvider } from "@/components/portal/portal-context";
+import { Sidebar } from "@/components/portal/sidebar";
+import { TopBar } from "@/components/portal/top-bar";
+import { ArticleDrawer } from "@/components/portal/article-drawer";
+import { TicketDrawer } from "@/components/portal/ticket-drawer";
+import { ChatWidget } from "@/components/portal/chat-widget";
+import { CtiCallCard } from "@/components/portal/cti-call-card";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -78,11 +86,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "KETRACO Smart HelpDesk" },
+      { name: "description", content: "KETRACO ICT support, knowledge articles, and ticket tracking." },
+      { property: "og:title", content: "KETRACO Smart HelpDesk" },
+      { property: "og:description", content: "KETRACO ICT support, knowledge articles, and ticket tracking." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -120,8 +127,27 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <PortalProvider>
+        <div className="flex min-h-screen flex-col bg-canvas">
+          <TopBar />
+          <nav aria-label="Main navigation" className="flex gap-2 border-b bg-card px-3 py-2 md:hidden">
+            <Link to="/" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">Knowledge</Link>
+            <Link to="/tickets" className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">Tickets</Link>
+          </nav>
+          <div className="flex min-h-0 flex-1">
+            <div className="hidden md:flex"><Sidebar /></div>
+            <main className="min-w-0 flex-1">
+              {/* Required: nested routes render here. Removing <Outlet /> breaks child routes. */}
+              <Outlet />
+            </main>
+          </div>
+        </div>
+        <ArticleDrawer />
+        <TicketDrawer />
+        <CtiCallCard />
+        <ChatWidget />
+        <Toaster position="top-right" />
+      </PortalProvider>
     </QueryClientProvider>
   );
 }
